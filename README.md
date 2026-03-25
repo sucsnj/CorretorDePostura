@@ -39,7 +39,9 @@ Promover maior consciência corporal e auxiliar na correção de posturas inadeq
 ---
 
 ## 📷 Demonstração
-*a ser implementado*
+
+![Demonstração do sistema de correção de postura](postura-alerta.gif)
+
 
 ---
 
