@@ -2,3 +2,5 @@
 # See https://docs.wokwi.com/guides/libraries
 
 MPU6050
+Adafruit GFX Library
+Adafruit SSD1306
