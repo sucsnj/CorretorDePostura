@@ -33,16 +33,29 @@
       "left": -58.15,
       "rotate": 90,
       "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-mpu6050",
+      "id": "imu2",
+      "top": -103.22,
+      "left": 117.28,
+      "rotate": 180,
+      "attrs": {}
     }
   ],
   "connections": [
     [ "imu1:VCC", "uno:5V", "red", [ "v9.6", "h-48.08", "v57.6", "h124.8" ] ],
-    [ "imu1:GND", "uno:GND.2", "black", [ "v28.8", "h-38.48", "v19.2", "h96" ] ],
     [ "imu1:SDA", "uno:A4", "green", [ "v19.2", "h-0.08", "v38.4", "h-38.4" ] ],
     [ "imu1:SCL", "uno:A5", "green", [ "v38.4", "h-38.48" ] ],
     [ "led1:A", "r1:1", "green", [ "v0" ] ],
     [ "led1:C", "uno:GND.1", "green", [ "v96", "h0.4", "v192", "h201.9" ] ],
-    [ "r1:2", "uno:8", "green", [ "v171.6", "h134.8" ] ]
+    [ "r1:2", "uno:8", "green", [ "v171.6", "h134.8" ] ],
+    [ "imu2:VCC", "uno:5V", "red", [ "v48", "h-9.68" ] ],
+    [ "imu2:GND", "uno:GND.2", "black", [ "v48", "h-28.88" ] ],
+    [ "imu1:GND", "uno:GND.3", "black", [ "v19.2", "h47.92" ] ],
+    [ "imu2:SCL", "uno:A5", "green", [ "v28.8", "h-115.28" ] ],
+    [ "imu1:AD0", "uno:GND.3", "green", [ "v0" ] ],
+    [ "imu2:AD0", "imu2:VCC", "green", [ "v19.2", "h-57.58" ] ]
   ],
   "dependencies": {}
 }
