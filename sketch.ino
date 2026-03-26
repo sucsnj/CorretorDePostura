@@ -9,10 +9,6 @@
 MPU6050 mpu;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-int16_t ax = 0;
-int16_t ay = 2000;
-int16_t az = 10000;
-
 void setup() {
   Serial.begin(9600);
   Wire.begin();
@@ -41,6 +37,9 @@ void setup() {
 }
 
 void loop() {
+  int16_t ax, ay, az;
+  mpu.getAcceleration(&ax, &ay, &az); // leitura real do sensor
+
   float angleX = atan2(ay, az) * 180 / PI;
 
   Serial.print("Ângulo X: ");
