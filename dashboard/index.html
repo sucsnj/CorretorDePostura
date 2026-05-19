@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard Postura</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Sistema embarcado</p>
+        <h1>Dashboard de Postura</h1>
+        <span id="device" class="device">postura-uno</span>
+      </div>
+      <div class="header-actions">
+        <a class="app-link" href="/app/">Abrir app</a>
+        <div id="connection" class="connection">Conectando</div>
+      </div>
+    </header>
+
+    <section class="metrics" aria-label="Resumo da leitura atual">
+      <article class="metric status-panel">
+        <p class="label">Status</p>
+        <strong id="status">Sem dados</strong>
+        <span id="updated">Aguardando leitura</span>
+      </article>
+
+      <article class="metric angle-card">
+        <p class="label">Angulo X</p>
+        <strong id="angle">0.0&deg;</strong>
+        <meter id="angleMeter" min="-90" max="90" low="-20" high="20" optimum="0" value="0"></meter>
+      </article>
+
+      <article class="metric">
+        <p class="label">Limite configurado</p>
+        <strong id="limit">20.0&deg;</strong>
+        <span>Tolerancia do alerta</span>
+      </article>
+
+      <article class="metric">
+        <p class="label">Alertas recentes</p>
+        <strong id="alertCount">0</strong>
+        <span id="sampleCount">0 leituras</span>
+      </article>
+    </section>
+
+    <section class="workspace">
+      <article class="panel chart-panel">
+        <div class="section-head">
+          <div>
+            <p class="label">Historico</p>
+            <h2>Inclinacao em tempo real</h2>
+          </div>
+          <span id="trend" class="trend">Sem tendencia</span>
+        </div>
+        <canvas id="chart" width="980" height="360" aria-label="Historico do angulo X"></canvas>
+      </article>
+
+      <aside class="panel insight-panel">
+        <div>
+          <p class="label">Estado atual</p>
+          <div class="posture-indicator">
+            <span id="indicatorDot"></span>
+            <strong id="insightStatus">Aguardando</strong>
+          </div>
+          <p id="insightText">Conecte o Arduino ou envie uma leitura de teste pelo app.</p>
+        </div>
+
+        <div class="scale">
+          <div class="scale-row">
+            <span>-60&deg;</span>
+            <span>0&deg;</span>
+            <span>60&deg;</span>
+          </div>
+          <div class="scale-track">
+            <span id="scaleMarker"></span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="section-head">
+        <div>
+          <p class="label">Eventos</p>
+          <h2>Ultimas leituras</h2>
+        </div>
+        <span id="count">0 leituras</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Dispositivo</th>
+              <th>Angulo</th>
+              <th>Status</th>
+              <th>Origem</th>
+            </tr>
+          </thead>
+          <tbody id="events"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="main.js"></script>
+</body>
+</html>

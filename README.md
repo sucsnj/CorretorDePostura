@@ -1,51 +1,114 @@
-# 📐 Sistema de Correção de Postura com MPU6050 + OLED SSD1306
+# Sistema de Correcao de Postura com MPU6050 + OLED SSD1306
 
-[![Arduino IDE](https://img.shields.io/badge/Arduino-IDE-blue?logo=arduino)](https://www.arduino.cc/en/software)
-[![Wokwi](https://img.shields.io/badge/Simulação-Wokwi-green?logo=wokwi)](https://wokwi.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+Projeto de sistema embarcado em Arduino para monitorar postura em tempo real. O Arduino le um sensor MPU6050, calcula o angulo de inclinacao, mostra o estado em um display OLED SSD1306 e aciona um LED quando a postura passa do limite configurado.
 
-Este projeto apresenta um protótipo de sistema embarcado (**IoT**) desenvolvido em **Arduino** para monitorar a postura do usuário em tempo real.  
-Utilizando sensores **MPU6050** (acelerômetro/giroscópio), o sistema calcula o ângulo de inclinação da coluna e emite alertas visuais via **LED** e mensagens em um **display OLED SSD1306**.
+Agora o projeto tambem inclui um broker local, um app web responsivo e um dashboard para visualizar as leituras.
 
----
+## Componentes
 
-## 🎯 Objetivo
-Promover maior consciência corporal e auxiliar na correção de posturas inadequadas, prevenindo problemas relacionados à má ergonomia — como dores lombares e cervicais — de forma simples, acessível e portátil.
+- `sketch.ino`: firmware do Arduino Uno. Mantem leitura do MPU6050, OLED e LED no pino 8.
+- `broker/broker.py`: broker local em Python, sem dependencias externas obrigatorias.
+- `broker/serial_bridge.py`: ponte opcional para ler o Serial do Arduino e enviar ao broker.
+- `dashboard/`: painel de monitoramento em tempo real.
+- `app/`: app web responsivo para acompanhar leituras e enviar testes simulados.
 
----
+## Hardware
 
-## ⚙️ Funcionalidades
-- 📊 Leitura dos eixos de aceleração (`ax`, `ay`, `az`) para calcular o ângulo de inclinação.  
-- 🎚️ Definição de limites de tolerância para postura aceitável.  
-- 💡 Alerta visual via **LED** quando a postura é considerada incorreta.  
-- 🖥️ Exibição de mensagens em **OLED SSD1306 (128x64)** para feedback direto ao usuário.  
-- 🧪 Possibilidade de simulação de valores fixos ou dinâmicos para testes no [Wokwi](https://wokwi.com/).  
-- 🔗 Escalável para múltiplos sensores, permitindo monitoramento em diferentes pontos da coluna (quadril e pescoço, por exemplo).
+- Arduino Uno
+- MPU6050 via I2C
+- Display OLED SSD1306 128x64 no endereco `0x3C`
+- LED vermelho no pino digital `8` com resistor de 220 ohms
 
----
+As bibliotecas do Arduino continuam listadas em `libraries.txt`:
 
-## 🚀 Tecnologias utilizadas
-- [Arduino IDE](https://www.arduino.cc/en/software)  
-- Biblioteca **Wire** (I²C)  
-- Biblioteca **MPU6050**  
-- Bibliotecas **Adafruit GFX** e **Adafruit SSD1306**  
-- [Simulador Wokwi](https://wokwi.com/)  
+- `MPU6050`
+- `Adafruit GFX Library`
+- `Adafruit SSD1306`
 
----
+## Como funciona a integracao
 
-## 📌 Próximos passos
-- ➕ Implementar suporte físico para **dois sensores** (quadril e pescoço) em vestíveis.  
-- 🎭 Criar **presets de postura simulada** (ereta, inclinada, “postura de camarão”).  
-- 📱 Explorar **integração com aplicativos móveis** para feedback em tempo real.  
-- 🔋 Otimizar consumo de energia para uso contínuo em dispositivos vestíveis.  
+O Arduino continua funcionando sozinho mesmo sem rede. A cada segundo ele escreve uma linha JSON no Serial:
 
----
+```json
+{"deviceId":"postura-uno","angleX":12.35,"limit":20.0,"alert":false,"status":"ok"}
+```
 
-## 📷 Demonstração
+Essa saida foi feita para sistemas embarcados: simples, leve, textual e facil de enviar por Serial, Bluetooth, Wi-Fi, ESP8266/ESP32 ou qualquer gateway.
 
-![Demonstração do sistema de correção de postura](postura-alerta.gif)
+## Rodar o broker, app e dashboard
 
----
+Com Node.js, que ja esta disponivel nesta maquina:
 
-## 📄 Licença
-Este projeto está sob a licença [MIT](LICENSE).
+```powershell
+npm start
+```
+
+Ou diretamente:
+
+```powershell
+node broker\broker.js
+```
+
+Se preferir Python:
+
+No terminal, dentro da pasta do projeto:
+
+```powershell
+python broker\broker.py
+```
+
+Depois abra:
+
+- Dashboard: `http://127.0.0.1:8000/dashboard/`
+- App: `http://127.0.0.1:8000/app/`
+- API ultima leitura: `http://127.0.0.1:8000/api/latest`
+
+O app tambem tem botoes de teste para simular leituras sem o Arduino conectado.
+
+## Usar com Arduino real via USB
+
+1. Grave o `sketch.ino` no Arduino.
+2. Inicie o broker:
+
+```powershell
+python broker\broker.py
+```
+
+3. Em outro terminal, instale a dependencia da ponte serial se ainda nao tiver:
+
+```powershell
+python -m pip install pyserial
+```
+
+4. Rode a ponte serial trocando `COM3` pela porta do seu Arduino:
+
+```powershell
+python broker\serial_bridge.py --port COM3
+```
+
+## Enviar dados por HTTP
+
+Qualquer gateway embarcado pode publicar no broker com:
+
+```http
+POST /api/telemetry
+Content-Type: application/json
+
+{"deviceId":"postura-uno","angleX":25.4,"limit":20,"source":"wifi"}
+```
+
+## Enviar dados por TCP
+
+O broker tambem escuta linhas JSON em `127.0.0.1:1883`. Isso nao implementa MQTT completo; e um canal simples de ingestao para projetos embarcados que enviam uma linha JSON por leitura.
+
+## Objetivo
+
+Promover consciencia corporal e auxiliar na correcao de posturas inadequadas com um prototipo simples, acessivel e extensivel para sistemas embarcados.
+
+## Demonstracao
+
+![Demonstracao do sistema de correcao de postura](postura-alerta.gif)
+
+## Licenca
+
+Este projeto esta sob a licenca [MIT](LICENSE).
