@@ -95,6 +95,14 @@ function serveStatic(request, response) {
       return;
     }
 
+    if (stats.isDirectory()) {
+      if (!requestUrl.pathname.endsWith("/")) {
+        response.writeHead(301, { Location: requestUrl.pathname + "/" + requestUrl.search });
+        response.end();
+        return;
+      }
+    }
+
     const finalPath = stats.isDirectory() ? path.join(filePath, "index.html") : filePath;
     fs.readFile(finalPath, (readError, data) => {
       if (readError) {
