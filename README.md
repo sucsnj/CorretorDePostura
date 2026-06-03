@@ -101,6 +101,34 @@ Content-Type: application/json
 
 O broker tambem escuta linhas JSON em `127.0.0.1:1883`. Isso nao implementa MQTT completo; e um canal simples de ingestao para projetos embarcados que enviam uma linha JSON por leitura.
 
+## Como implantar na Nuvem (Render)
+
+Este projeto está pronto para ser implantado gratuitamente no [Render](https://render.com/). O broker web hospedará o Dashboard, o App e receberá os dados de telemetria de qualquer lugar do mundo.
+
+### Passo a passo para o Deploy:
+
+1. Garanta que as alterações recentes estão no seu repositório do **GitHub**.
+2. Acesse o [Render](https://render.com/) e faça login usando seu GitHub.
+3. No painel do Render, clique em **New +** (canto superior direito) e escolha **Web Service**.
+4. Conecte o seu repositório do projeto **CorretorDePostura**.
+5. Configure os seguintes campos do serviço:
+   - **Name:** `corretor-de-postura` (ou o nome que preferir)
+   - **Branch:** `correcao-redirecionamento-broker` (ou a branch correspondente)
+   - **Runtime:** `Node`
+   - **Build Command:** Deixe em branco ou `npm install`
+   - **Start Command:** `npm start`
+   - **Instance Type:** Escolha o plano **Free** (Grátis)
+6. Clique em **Deploy Web Service**.
+
+Após a conclusão do build, uma URL pública será gerada (ex: `https://corretor-de-postura.onrender.com`).
+Suas páginas e APIs estarão acessíveis em:
+- Dashboard: `https://corretor-de-postura.onrender.com/dashboard/`
+- App Simulador: `https://corretor-de-postura.onrender.com/app/`
+- Enviar telemetria (HTTP): `https://corretor-de-postura.onrender.com/api/telemetry`
+
+> [!NOTE]
+> No plano gratuito do Render, apenas tráfego HTTP é exposto publicamente para a internet. A porta TCP (`1883`) funciona apenas localmente. O ESP32 ou outros microcontroladores devem enviar dados usando o endpoint HTTP (`POST /api/telemetry`).
+
 ## Objetivo
 
 Promover consciencia corporal e auxiliar na correcao de posturas inadequadas com um prototipo simples, acessivel e extensivel para sistemas embarcados.

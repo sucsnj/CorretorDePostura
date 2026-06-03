@@ -81,7 +81,12 @@ function parseBody(request) {
 
 function serveStatic(request, response) {
   const requestUrl = new URL(request.url, "http://localhost");
-  const pathname = requestUrl.pathname === "/" ? "/dashboard/index.html" : requestUrl.pathname;
+  if (requestUrl.pathname === "/") {
+    response.writeHead(302, { Location: "/dashboard/" });
+    response.end();
+    return;
+  }
+  const pathname = requestUrl.pathname;
   const filePath = path.normalize(path.join(root, pathname));
 
   if (!filePath.startsWith(root)) {
@@ -187,6 +192,9 @@ function createHttpServer() {
 
 function createTcpServer() {
   return net.createServer((socket) => {
+    socket.on("error", (err) => {
+      console.warn(`[tcp] Conexão abortada pelo cliente: ${err.message}`);
+    });
     let buffer = "";
     socket.on("data", (chunk) => {
       buffer += chunk.toString("utf8");
@@ -200,7 +208,10 @@ function createTcpServer() {
           payload.source = payload.source || "tcp";
           socket.write(`${JSON.stringify({ ok: true, event: publish(payload) })}\n`);
         } catch (error) {
-          socket.write('{"ok":false,"error":"JSON invalido"}\n');
+          // Verifica se o socket ainda está gravável antes de tentar escrever
+          if (socket.writable) {
+            socket.write('{"ok":false,"error":"JSON invalido"}\n');
+          }
         }
       }
     });
@@ -208,12 +219,19 @@ function createTcpServer() {
 }
 
 const args = process.argv.slice(2);
-const host = args.includes("--host") ? args[args.indexOf("--host") + 1] : "127.0.0.1";
-const httpPort = args.includes("--http-port") ? Number(args[args.indexOf("--http-port") + 1]) : 8000;
+const host = args.includes("--host") ? args[args.indexOf("--host") + 1] : (process.env.PORT ? "0.0.0.0" : "127.0.0.1");
+const httpPort = args.includes("--http-port") ? Number(args[args.indexOf("--http-port") + 1]) : (process.env.PORT ? Number(process.env.PORT) : 8000);
 const tcpPort = args.includes("--tcp-port") ? Number(args[args.indexOf("--tcp-port") + 1]) : 1883;
 
 const tcpServer = createTcpServer();
-tcpServer.listen(tcpPort, host);
+tcpServer.on("error", (err) => {
+  console.warn(`[tcp] Aviso: Não foi possível iniciar o servidor TCP: ${err.message}`);
+});
+try {
+  tcpServer.listen(tcpPort, host);
+} catch (err) {
+  console.warn(`[tcp] Aviso: Não foi possível escutar na porta TCP ${tcpPort}: ${err.message}`);
+}
 
 const httpServer = createHttpServer();
 httpServer.listen(httpPort, host, () => {

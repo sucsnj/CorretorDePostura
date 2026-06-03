@@ -10,6 +10,7 @@ import time
 from collections import deque
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import os
 from typing import Any
 
 
@@ -123,7 +124,10 @@ class BrokerHttpHandler(SimpleHTTPRequestHandler):
             return
 
         if self.path == "/":
-            self.path = "/dashboard/index.html"
+            self.send_response(302)
+            self.send_header("Location", "/dashboard/")
+            self.end_headers()
+            return
 
         super().do_GET()
 
@@ -190,17 +194,25 @@ class TcpTelemetryHandler(socketserver.StreamRequestHandler):
                 self.wfile.write(b'{"ok":false,"error":"JSON invalido"}\n')
 
 
-def start_tcp_server(host: str, port: int) -> socketserver.ThreadingTCPServer:
-    server = socketserver.ThreadingTCPServer((host, port), TcpTelemetryHandler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    return server
+def start_tcp_server(host: str, port: int) -> socketserver.ThreadingTCPServer | None:
+    try:
+        server = socketserver.ThreadingTCPServer((host, port), TcpTelemetryHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        return server
+    except Exception as e:
+        print(f"[tcp] Aviso: Nao foi possivel iniciar o servidor TCP: {e}")
+        return None
 
 
 def main() -> None:
+    env_port = os.environ.get("PORT")
+    default_host = "0.0.0.0" if env_port else "127.0.0.1"
+    default_port = int(env_port) if env_port else 8000
+
     parser = argparse.ArgumentParser(description="Broker local do sistema de postura")
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--http-port", type=int, default=8000)
+    parser.add_argument("--host", default=default_host)
+    parser.add_argument("--http-port", type=int, default=default_port)
     parser.add_argument("--tcp-port", type=int, default=1883)
     args = parser.parse_args()
 
@@ -218,7 +230,8 @@ def main() -> None:
     except KeyboardInterrupt:
         pass
     finally:
-        tcp_server.shutdown()
+        if tcp_server:
+            tcp_server.shutdown()
         http_server.server_close()
 
 
