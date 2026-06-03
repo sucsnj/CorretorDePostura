@@ -192,6 +192,9 @@ function createHttpServer() {
 
 function createTcpServer() {
   return net.createServer((socket) => {
+    socket.on("error", (err) => {
+      console.warn(`[tcp] Conexão abortada pelo cliente: ${err.message}`);
+    });
     let buffer = "";
     socket.on("data", (chunk) => {
       buffer += chunk.toString("utf8");
@@ -205,7 +208,10 @@ function createTcpServer() {
           payload.source = payload.source || "tcp";
           socket.write(`${JSON.stringify({ ok: true, event: publish(payload) })}\n`);
         } catch (error) {
-          socket.write('{"ok":false,"error":"JSON invalido"}\n');
+          // Verifica se o socket ainda está gravável antes de tentar escrever
+          if (socket.writable) {
+            socket.write('{"ok":false,"error":"JSON invalido"}\n');
+          }
         }
       }
     });
