@@ -124,7 +124,10 @@ class BrokerHttpHandler(SimpleHTTPRequestHandler):
             return
 
         if self.path == "/":
-            self.path = "/dashboard/index.html"
+            self.send_response(302)
+            self.send_header("Location", "/dashboard/")
+            self.end_headers()
+            return
 
         super().do_GET()
 

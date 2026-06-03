@@ -81,7 +81,12 @@ function parseBody(request) {
 
 function serveStatic(request, response) {
   const requestUrl = new URL(request.url, "http://localhost");
-  const pathname = requestUrl.pathname === "/" ? "/dashboard/index.html" : requestUrl.pathname;
+  if (requestUrl.pathname === "/") {
+    response.writeHead(302, { Location: "/dashboard/" });
+    response.end();
+    return;
+  }
+  const pathname = requestUrl.pathname;
   const filePath = path.normalize(path.join(root, pathname));
 
   if (!filePath.startsWith(root)) {
