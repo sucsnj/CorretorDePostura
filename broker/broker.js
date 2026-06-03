@@ -208,12 +208,19 @@ function createTcpServer() {
 }
 
 const args = process.argv.slice(2);
-const host = args.includes("--host") ? args[args.indexOf("--host") + 1] : "127.0.0.1";
-const httpPort = args.includes("--http-port") ? Number(args[args.indexOf("--http-port") + 1]) : 8000;
+const host = args.includes("--host") ? args[args.indexOf("--host") + 1] : (process.env.PORT ? "0.0.0.0" : "127.0.0.1");
+const httpPort = args.includes("--http-port") ? Number(args[args.indexOf("--http-port") + 1]) : (process.env.PORT ? Number(process.env.PORT) : 8000);
 const tcpPort = args.includes("--tcp-port") ? Number(args[args.indexOf("--tcp-port") + 1]) : 1883;
 
 const tcpServer = createTcpServer();
-tcpServer.listen(tcpPort, host);
+tcpServer.on("error", (err) => {
+  console.warn(`[tcp] Aviso: Não foi possível iniciar o servidor TCP: ${err.message}`);
+});
+try {
+  tcpServer.listen(tcpPort, host);
+} catch (err) {
+  console.warn(`[tcp] Aviso: Não foi possível escutar na porta TCP ${tcpPort}: ${err.message}`);
+}
 
 const httpServer = createHttpServer();
 httpServer.listen(httpPort, host, () => {
