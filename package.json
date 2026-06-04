@@ -1,10 +1,9 @@
 {
-  "name": "projeto-postura",
+  "name": "corretor-de-postura",
   "version": "1.0.0",
   "private": true,
-  "description": "Sistema embarcado de correcao de postura com broker, app e dashboard.",
-  "scripts": {
-    "start": "node broker/broker.js",
-    "broker": "node broker/broker.js"
-  }
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
 }
