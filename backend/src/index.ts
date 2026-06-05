@@ -19,9 +19,10 @@ const server = http.createServer(app);
 // Configure CORS to allow any origin (e.g. Netlify)
 app.use(
   cors({
-    origin: '*',
+    origin: ['https://corretordeposturafront.netlify.app'],
     methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
   })
 );
 
@@ -30,7 +31,7 @@ app.use(express.json());
 // Socket.io Server Setup
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: ['https://corretordeposturafront.netlify.app'],
     methods: ['GET', 'POST'],
   },
 });
