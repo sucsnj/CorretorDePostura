@@ -21,7 +21,7 @@ export function isUbidotsHealthy(): boolean {
 // Function to test the token and device connectivity
 export async function testUbidotsConnection(): Promise<boolean> {
   const token = process.env.UBIDOTS_TOKEN;
-  if (!token || token === 'BBUS-eDoQW7vcUZsih99Pp4W0i1Tzr9eqRo') {
+  if (!token || token === 'SEU_TOKEN_AQUI') {
     ubidotsHealthy = false;
     return false;
   }

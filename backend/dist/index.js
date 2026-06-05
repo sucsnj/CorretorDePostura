@@ -19,7 +19,6 @@ const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 // Configure CORS to allow local development and Netlify frontend
 const allowedOrigins = [
-    'https://corretordeposturafront.netlify.app',
     process.env.FRONTEND_URL,
 ].filter(Boolean);
 const corsOptions = {
@@ -28,7 +27,7 @@ const corsOptions = {
         if (!origin)
             return callback(null, true);
         const isAllowed = allowedOrigins.some((allowed) => allowed === origin);
-        if (isAllowed || origin.startsWith('http://localhost') || origin.endsWith('netlify.app')) {
+        if (isAllowed || origin.startsWith('http://localhost')) {
             callback(null, true);
         }
         else {
