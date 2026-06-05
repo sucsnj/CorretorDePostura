@@ -16,10 +16,18 @@ console.log("MONGO_URI:", process.env.MONGO_URI);
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = process.env.FRONTEND_URL?.split(',') || [];
+
 // Configure CORS to allow any origin (e.g. Netlify)
 app.use(
   cors({
-    origin: ['https://corretordeposturafront.netlify.app'],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -31,7 +39,7 @@ app.use(express.json());
 // Socket.io Server Setup
 const io = new Server(server, {
   cors: {
-    origin: ['https://corretordeposturafront.netlify.app'],
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
   },
 });
