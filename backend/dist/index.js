@@ -14,21 +14,36 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const posture_1 = __importDefault(require("./routes/posture"));
 const health_1 = __importDefault(require("./routes/health"));
 dotenv_1.default.config();
+console.log("MONGO_URI:", process.env.MONGO_URI);
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
-// Configure CORS to allow any origin (e.g. Netlify)
-app.use((0, cors_1.default)({
-    origin: '*',
+// Configure CORS to allow local development and Netlify frontend
+const allowedOrigins = [
+    'https://corretordeposturafront.netlify.app',
+    process.env.FRONTEND_URL,
+].filter(Boolean);
+const corsOptions = {
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+        if (!origin)
+            return callback(null, true);
+        const isAllowed = allowedOrigins.some((allowed) => allowed === origin);
+        if (isAllowed || origin.startsWith('http://localhost') || origin.endsWith('netlify.app')) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+    credentials: true,
+};
+app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 // Socket.io Server Setup
 const io = new socket_io_1.Server(server, {
-    cors: {
-        origin: '*',
-        methods: ['GET', 'POST'],
-    },
+    cors: corsOptions,
 });
 // Mounting Routes
 app.use('/health', health_1.default);

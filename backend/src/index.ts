@@ -16,23 +16,36 @@ console.log("MONGO_URI:", process.env.MONGO_URI);
 const app = express();
 const server = http.createServer(app);
 
-// Configure CORS to allow any origin (e.g. Netlify)
-app.use(
-  cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+// Configure CORS to allow local development and Netlify frontend
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+].filter(Boolean) as string[];
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+    if (!origin) return callback(null, true);
+
+    const isAllowed = allowedOrigins.some((allowed) => allowed === origin);
+
+    if (isAllowed || origin.startsWith('http://localhost')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
 // Socket.io Server Setup
 const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-  },
+  cors: corsOptions,
 });
 
 // Mounting Routes
