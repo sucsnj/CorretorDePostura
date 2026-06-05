@@ -1,142 +1,207 @@
-# Sistema de Correcao de Postura com MPU6050 + OLED SSD1306
+# Sistema de Correção de Postura com ESP32, MPU6050 e Ubidots
 
-Projeto de sistema embarcado em Arduino para monitorar postura em tempo real. O Arduino le um sensor MPU6050, calcula o angulo de inclinacao, mostra o estado em um display OLED SSD1306 e aciona um LED quando a postura passa do limite configurado.
+Projeto acadêmico desenvolvido para monitoramento de postura corporal em tempo real utilizando um ESP32, um sensor MPU6050 e a plataforma Ubidots STEM.
 
-Agora o projeto tambem inclui um broker local, um app web responsivo e um dashboard para visualizar as leituras.
+O sistema coleta dados de inclinação corporal, calcula o desvio em relação a uma posição de referência calibrada e disponibiliza as informações em um dashboard web para acompanhamento remoto.
 
-## Componentes
+## Funcionalidades
 
-- `sketch.ino`: firmware do Arduino Uno. Mantem leitura do MPU6050, OLED e LED no pino 8.
-- `broker/broker.py`: broker local em Python, sem dependencias externas obrigatorias.
-- `broker/serial_bridge.py`: ponte opcional para ler o Serial do Arduino e enviar ao broker.
-- `dashboard/`: painel de monitoramento em tempo real.
-- `app/`: app web responsivo para acompanhar leituras e enviar testes simulados.
+* Leitura contínua dos dados do MPU6050.
+* Calibração automática da postura de referência.
+* Cálculo do ângulo de inclinação.
+* Cálculo do desvio em relação à postura correta.
+* Alerta visual através de LED quando o limite configurado é excedido.
+* Exibição local das informações em um display OLED SSD1306.
+* Envio dos dados para o Ubidots via MQTT.
+* Armazenamento histórico em MongoDB Atlas.
+* Dashboard web responsivo para monitoramento em tempo real.
+* Atualização automática utilizando WebSockets.
 
-## Hardware
+## Arquitetura do Sistema
 
-- Arduino Uno
-- MPU6050 via I2C
-- Display OLED SSD1306 128x64 no endereco `0x3C`
-- LED vermelho no pino digital `8` com resistor de 220 ohms
-
-As bibliotecas do Arduino continuam listadas em `libraries.txt`:
-
-- `MPU6050`
-- `Adafruit GFX Library`
-- `Adafruit SSD1306`
-
-## Como funciona a integracao
-
-O Arduino continua funcionando sozinho mesmo sem rede. A cada segundo ele escreve uma linha JSON no Serial:
-
-```json
-{"deviceId":"postura-uno","angleX":12.35,"limit":20.0,"alert":false,"status":"ok"}
+```text
+MPU6050
+   │
+   ▼
+ESP32
+   │
+   ├── OLED SSD1306
+   ├── LED de alerta
+   │
+   ▼
+Ubidots STEM (MQTT)
+   │
+   ▼
+Backend Node.js + Express
+   │
+   ├── MongoDB Atlas
+   └── Socket.IO
+   │
+   ▼
+Frontend React + Vite
 ```
 
-Essa saida foi feita para sistemas embarcados: simples, leve, textual e facil de enviar por Serial, Bluetooth, Wi-Fi, ESP8266/ESP32 ou qualquer gateway.
+## Hardware Utilizado
 
-## Rodar o broker, app e dashboard
+* ESP32
+* MPU6050
+* Display OLED SSD1306 128x64
+* LED indicador
+* Resistor de 220 Ω
+* Jumpers
 
-Com Node.js, que ja esta disponivel nesta maquina:
+## Bibliotecas Utilizadas no ESP32
 
-```powershell
+* WiFi
+* PubSubClient
+* Wire
+* MPU6050
+* Adafruit GFX Library
+* Adafruit SSD1306
+
+## Variáveis Publicadas no Ubidots
+
+Dispositivo:
+
+```text
+posturaesp32
+```
+
+Variáveis:
+
+```text
+angulo
+desvio
+status
+```
+
+### Descrição das Variáveis
+
+| Variável | Descrição                                               |
+| -------- | ------------------------------------------------------- |
+| angulo   | Ângulo calculado pelo MPU6050                           |
+| desvio   | Diferença entre o ângulo atual e a referência calibrada |
+| status   | Estado da postura (1 = correta, 0 = incorreta)          |
+
+## Backend
+
+O backend foi desenvolvido utilizando:
+
+* Node.js
+* TypeScript
+* Express
+* Socket.IO
+* MongoDB Atlas
+* Mongoose
+
+### Variáveis de Ambiente
+
+Arquivo `.env`:
+
+```env
+PORT=5000
+
+UBIDOTS_TOKEN=SEU_TOKEN
+
+MONGO_URI=sua_uri_mongodb
+
+ADMIN_PASSWORD=sua_senha
+
+JWT_SECRET=sua_chave_jwt
+
+FRONTEND_URL=https://seu-frontend.netlify.app
+```
+
+### Executando Localmente
+
+```bash
+npm install
+npm run dev
+```
+
+### Build para Produção
+
+```bash
+npm run build
 npm start
 ```
 
-Ou diretamente:
+## Frontend
 
-```powershell
-node broker\broker.js
+O frontend foi desenvolvido utilizando:
+
+* React
+* TypeScript
+* Vite
+* Recharts
+* Socket.IO Client
+
+### Variáveis de Ambiente
+
+Arquivo `.env`:
+
+```env
+VITE_API_URL=https://seu-backend.onrender.com
 ```
 
-Se preferir Python:
+### Executando Localmente
 
-No terminal, dentro da pasta do projeto:
-
-```powershell
-python broker\broker.py
+```bash
+npm install
+npm run dev
 ```
 
-Depois abra:
+### Build para Produção
 
-- Dashboard: `http://127.0.0.1:8000/dashboard/`
-- App: `http://127.0.0.1:8000/app/`
-- API ultima leitura: `http://127.0.0.1:8000/api/latest`
-
-O app tambem tem botoes de teste para simular leituras sem o Arduino conectado.
-
-## Usar com Arduino real via USB
-
-1. Grave o `sketch.ino` no Arduino.
-2. Inicie o broker:
-
-```powershell
-python broker\broker.py
+```bash
+npm run build
 ```
 
-3. Em outro terminal, instale a dependencia da ponte serial se ainda nao tiver:
+## Deploy
 
-```powershell
-python -m pip install pyserial
-```
+### Backend
 
-4. Rode a ponte serial trocando `COM3` pela porta do seu Arduino:
+Escolha uma plataforma para hospedar o backend:
 
-```powershell
-python broker\serial_bridge.py --port COM3
-```
+- Render (preferencial)
+- Heroku
+- Railway
+- Vercel
 
-## Enviar dados por HTTP
+### Frontend
 
-Qualquer gateway embarcado pode publicar no broker com:
+Escolha uma plataforma para hospedar o frontend:
+
+- Netlify (preferencial)
+- Vercel
+- Render
+
+## Endpoint de Diagnóstico
+
+Verificação da saúde da aplicação:
 
 ```http
-POST /api/telemetry
-Content-Type: application/json
-
-{"deviceId":"postura-uno","angleX":25.4,"limit":20,"source":"wifi"}
+GET /health
 ```
 
-## Enviar dados por TCP
+Exemplo de resposta:
 
-O broker tambem escuta linhas JSON em `127.0.0.1:1883`. Isso nao implementa MQTT completo; e um canal simples de ingestao para projetos embarcados que enviam uma linha JSON por leitura.
-
-## Como implantar na Nuvem (Render)
-
-Este projeto está pronto para ser implantado gratuitamente no [Render](https://render.com/). O broker web hospedará o Dashboard, o App e receberá os dados de telemetria de qualquer lugar do mundo.
-
-### Passo a passo para o Deploy:
-
-1. Garanta que as alterações recentes estão no seu repositório do **GitHub**.
-2. Acesse o [Render](https://render.com/) e faça login usando seu GitHub.
-3. No painel do Render, clique em **New +** (canto superior direito) e escolha **Web Service**.
-4. Conecte o seu repositório do projeto **CorretorDePostura**.
-5. Configure os seguintes campos do serviço:
-   - **Name:** `corretor-de-postura` (ou o nome que preferir)
-   - **Branch:** `correcao-redirecionamento-broker` (ou a branch correspondente)
-   - **Runtime:** `Node`
-   - **Build Command:** Deixe em branco ou `npm install`
-   - **Start Command:** `npm start`
-   - **Instance Type:** Escolha o plano **Free** (Grátis)
-6. Clique em **Deploy Web Service**.
-
-Após a conclusão do build, uma URL pública será gerada (ex: `https://corretor-de-postura.onrender.com`).
-Suas páginas e APIs estarão acessíveis em:
-- Dashboard: `https://corretor-de-postura.onrender.com/dashboard/`
-- App Simulador: `https://corretor-de-postura.onrender.com/app/`
-- Enviar telemetria (HTTP): `https://corretor-de-postura.onrender.com/api/telemetry`
-
-> [!NOTE]
-> No plano gratuito do Render, apenas tráfego HTTP é exposto publicamente para a internet. A porta TCP (`1883`) funciona apenas localmente. O ESP32 ou outros microcontroladores devem enviar dados usando o endpoint HTTP (`POST /api/telemetry`).
+```json
+{
+  "status": "ok",
+  "mongodb": true,
+  "ubidots": true
+}
+```
 
 ## Objetivo
 
-Promover consciencia corporal e auxiliar na correcao de posturas inadequadas com um prototipo simples, acessivel e extensivel para sistemas embarcados.
+Este projeto tem como objetivo auxiliar na conscientização postural através da coleta, armazenamento e visualização de dados de inclinação corporal, permitindo o acompanhamento em tempo real e a análise histórica das leituras.
 
-## Demonstracao
+## Gif de demonstração
 
-![Demonstracao do sistema de correcao de postura](postura-alerta.gif)
+![Demonstracao](postura-alerta.gif)
 
-## Licenca
+## Licença
 
-Este projeto esta sob a licenca [MIT](LICENSE).
+Este projeto está licenciado sob a licença MIT.
