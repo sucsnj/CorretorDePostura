@@ -3,22 +3,8 @@
   "author": "Carlos Santana",
   "editor": "wokwi",
   "parts": [
-    {
-      "type": "wokwi-arduino-uno",
-      "id": "uno",
-      "top": 27.8,
-      "left": 5,
-      "rotate": 180,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-mpu6050",
-      "id": "imu1",
-      "top": -103.22,
-      "left": 30.88,
-      "rotate": 180,
-      "attrs": {}
-    },
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp32", "top": -33.7, "left": 43, "attrs": {} },
+    { "type": "wokwi-mpu6050", "id": "imu1", "top": -120.98, "left": 2.32, "attrs": {} },
     {
       "type": "wokwi-led",
       "id": "led1",
@@ -37,23 +23,29 @@
     {
       "type": "board-ssd1306",
       "id": "oled1",
-      "top": -160.06,
-      "left": 201.83,
+      "top": -25.66,
+      "left": 221.03,
       "attrs": { "i2cAddress": "0x3c" }
     }
   ],
   "connections": [
-    [ "imu1:VCC", "uno:5V", "red", [ "v9.6", "h-48.08", "v57.6", "h124.8" ] ],
-    [ "imu1:GND", "uno:GND.2", "black", [ "v28.8", "h-38.48", "v19.2", "h96" ] ],
-    [ "imu1:SDA", "uno:A4", "green", [ "v19.2", "h-0.08", "v38.4", "h-38.4" ] ],
-    [ "imu1:SCL", "uno:A5", "green", [ "v38.4", "h-38.48" ] ],
-    [ "led1:A", "r1:1", "green", [ "v0" ] ],
-    [ "led1:C", "uno:GND.1", "green", [ "v96", "h0.4", "v192", "h201.9" ] ],
-    [ "r1:2", "uno:8", "green", [ "v171.6", "h134.8" ] ],
-    [ "oled1:VCC", "uno:5V", "red", [ "v-28.8", "h-134.25", "v220.7" ] ],
-    [ "oled1:GND", "uno:GND.3", "black", [ "v-9.6", "h-96", "v144", "h-38.4" ] ],
-    [ "oled1:SDA", "uno:A4", "green", [ "v-38.4", "h67.27", "v172.8", "h-38.4" ] ],
-    [ "uno:A5", "oled1:SCL", "green", [ "v-47.9", "h149.3", "v-182.4", "h86.1" ] ]
+    [ "imu1:SDA", "esp32:21", "green", [] ],
+    [ "imu1:SCL", "esp32:22", "green", [] ],
+    [ "r1:2", "esp32:15", "green", [] ],
+    [ "oled1:GND", "esp32:GND.3", "black", [] ],
+    [ "oled1:SDA", "esp32:21", "green", [] ],
+    [ "oled1:SCL", "esp32:22", "green", [] ],
+    [ "esp32:3V3", "imu1:VCC", "green", [ "v0", "h38.1", "v-259.2", "h-67.2" ] ],
+    [ "imu1:GND", "esp32:GND.1", "black", [ "v-28.8", "h96.08", "v259.2", "h9.6" ] ],
+    [ "esp32:D21", "imu1:SDA", "green", [ "h9.3", "v-182.8", "h-105.6" ] ],
+    [ "esp32:D22", "imu1:SCL", "green", [ "h28.5", "v-173.1", "h-115.2" ] ],
+    [ "oled1:VCC", "esp32:3V3", "red", [ "v-38.4", "h76.95", "v182.4", "h-182.4" ] ],
+    [ "oled1:GND", "esp32:GND.1", "black", [ "v-19.2", "h-48", "v153.6" ] ],
+    [ "oled1:SDA", "esp32:D21", "green", [ "v-19.2", "h48.07", "v105.6", "h-144", "v-38.4" ] ],
+    [ "oled1:SCL", "esp32:D22", "green", [ "v-28.8", "h-86.1", "v57.6", "h-47.7" ] ],
+    [ "led1:C", "r1:1", "green", [ "v0" ] ],
+    [ "r1:2", "esp32:D15", "green", [ "h0", "v104.4", "h201.6", "v-67.2" ] ],
+    [ "led1:A", "esp32:GND.2", "green", [ "v19.2", "h48", "v134.4" ] ]
   ],
   "dependencies": {}
 }

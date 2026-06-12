@@ -4,3 +4,5 @@
 MPU6050
 Adafruit GFX Library
 Adafruit SSD1306
+
+PubSubClient
